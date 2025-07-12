@@ -68,10 +68,15 @@ const logout = async (req, res) => {
 
 // GET
 const checkLoggedin = async (req, res) => {
-  const user = req.user;
-  if (!user) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-  return res.status(200).json(user);
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error('Check logged in error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 module.exports = {

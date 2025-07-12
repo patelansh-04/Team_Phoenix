@@ -1,19 +1,20 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiService } from '@/lib/api';
 
 interface User {
   id: string;
   email: string;
   name: string;
   points: number;
-  isAdmin: boolean;
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
   loading: boolean;
 }
 
@@ -24,45 +25,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing user session
-    const savedUser = localStorage.getItem('reWearUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    checkAuthStatus();
   }, []);
 
+  const checkAuthStatus = async () => {
+    try {
+      const response = await apiService.getCurrentUser();
+      if (response.data) {
+        setUser(response.data);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const login = async (email: string, password: string) => {
-    // Mock login - replace with actual API call
-    const mockUser: User = {
-      id: '1',
-      email,
-      name: email.split('@')[0],
-      points: 150,
-      isAdmin: email === 'admin@rewear.com'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('reWearUser', JSON.stringify(mockUser));
+    try {
+      const response = await apiService.login(email, password);
+      if (response.error) {
+        return { success: false, error: response.error };
+      }
+      
+      // Fetch user data after successful login
+      const userResponse = await apiService.getCurrentUser();
+      if (userResponse.data) {
+        setUser(userResponse.data);
+        return { success: true };
+      }
+      
+      return { success: false, error: 'Failed to get user data' };
+    } catch (error) {
+      return { success: false, error: 'Login failed' };
+    }
   };
 
   const signup = async (email: string, password: string, name: string) => {
-    // Mock signup - replace with actual API call
-    const mockUser: User = {
-      id: Date.now().toString(),
-      email,
-      name,
-      points: 50, // Welcome bonus
-      isAdmin: false
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('reWearUser', JSON.stringify(mockUser));
+    try {
+      const response = await apiService.register(name, email, password);
+      if (response.error) {
+        return { success: false, error: response.error };
+      }
+      
+      // Auto-login after successful signup
+      return await login(email, password);
+    } catch (error) {
+      return { success: false, error: 'Signup failed' };
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('reWearUser');
+  const logout = async () => {
+    try {
+      await apiService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+    }
   };
 
   return (

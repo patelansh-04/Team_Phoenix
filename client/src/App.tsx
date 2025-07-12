@@ -13,6 +13,7 @@ import Signup from "./pages/auth/Signup";
 import Dashboard from "./pages/Dashboard";
 import AddItem from "./pages/AddItem";
 import ItemDetail from "./pages/ItemDetail";
+import ItemsList from "./pages/ItemsList";
 import AdminPanel from "./pages/admin/AdminPanel";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,14 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/item/:id" element={<ItemDetail />} />
+                <Route 
+                  path="/items" 
+                  element={
+                    <ProtectedRoute>
+                      <ItemsList />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route 
                   path="/dashboard" 
                   element={

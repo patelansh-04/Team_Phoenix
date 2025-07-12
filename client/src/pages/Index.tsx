@@ -1,45 +1,82 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Recycle, Users, Award, Heart } from 'lucide-react';
 import ItemCard from '@/components/items/ItemCard';
+import { useQuery } from '@tanstack/react-query';
+import { apiService } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
-const featuredItems = [
-  {
-    id: '1',
-    title: 'Vintage Denim Jacket',
-    category: 'Outerwear',
-    size: 'M',
-    condition: 'Good',
-    points: 25,
-    image: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5d?auto=format&fit=crop&w=300&h=300',
-    uploader: 'Sarah M.'
-  },
-  {
-    id: '2',
-    title: 'Summer Floral Dress',
-    category: 'Dresses',
-    size: 'S',
-    condition: 'Excellent',
-    points: 30,
-    image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=300&h=300',
-    uploader: 'Emma K.'
-  },
-  {
-    id: '3',
-    title: 'Designer Sneakers',
-    category: 'Shoes',
-    size: '9',
-    condition: 'Good',
-    points: 40,
-    image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=300&h=300',
-    uploader: 'Mike D.'
-  }
-];
+interface Item {
+  _id: string;
+  title: string;
+  category: string;
+  size: string;
+  condition: string;
+  points: number;
+  images: string[];
+  owner: {
+    name: string;
+    email: string;
+  };
+}
 
 const Index = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const { data: itemsResponse, isLoading, error } = useQuery({
+    queryKey: ['featured-items'],
+    queryFn: async () => {
+      const response = await apiService.getAllItems();
+      if (response.error) throw new Error(response.error);
+      return response.data || [];
+    },
+  });
+
+  const featuredItems = (itemsResponse as Item[])?.slice(0, 3) || [];
+
+  const handleBrowseItems = () => {
+    if (user) {
+      navigate('/items');
+    } else {
+      navigate('/login', { 
+        state: { 
+          from: '/items',
+          message: 'Please log in to browse all items' 
+        } 
+      });
+    }
+  };
+
+  const handleViewAllItems = () => {
+    if (user) {
+      navigate('/items');
+    } else {
+      navigate('/login', { 
+        state: { 
+          from: '/items',
+          message: 'Please log in to view all items' 
+        } 
+      });
+    }
+  };
+
+  const handleStartSwapping = () => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/signup', { 
+        state: { 
+          from: '/dashboard',
+          message: 'Create an account to start swapping items' 
+        } 
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -53,14 +90,12 @@ const Index = () => {
               Join the sustainable fashion revolution. Exchange unused clothing with others in your community.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild className="text-lg px-8 py-6">
-                <Link to="/signup">
-                  Start Swapping
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
+              <Button size="lg" className="text-lg px-8 py-6" onClick={handleStartSwapping}>
+                Start Swapping
+                <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6">
-                <Link to="#featured">Browse Items</Link>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6" onClick={handleBrowseItems}>
+                Browse Items
               </Button>
             </div>
           </div>
@@ -129,15 +164,30 @@ const Index = () => {
             <p className="text-xl text-gray-600">Discover unique pieces ready for their next adventure</p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredItems.map((item) => (
-              <ItemCard key={item.id} item={item} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading featured items...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600">Failed to load items. Please try again later.</p>
+            </div>
+          ) : featuredItems.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No items available yet. Be the first to list an item!</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredItems.map((item) => (
+                <ItemCard key={item._id} item={item} />
+              ))}
+            </div>
+          )}
           
           <div className="text-center mt-12">
-            <Button size="lg" asChild>
-              <Link to="/signup">View All Items</Link>
+            <Button size="lg" onClick={handleViewAllItems}>
+              View All Items
             </Button>
           </div>
         </div>
@@ -182,11 +232,9 @@ const Index = () => {
           <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
             Start your sustainable fashion journey and connect with like-minded people who care about the planet.
           </p>
-          <Button size="lg" variant="secondary" asChild className="text-lg px-8 py-6">
-            <Link to="/signup">
-              Get Started Free
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
+          <Button size="lg" variant="secondary" className="text-lg px-8 py-6" onClick={handleStartSwapping}>
+            Get Started Free
+            <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </div>
       </section>
