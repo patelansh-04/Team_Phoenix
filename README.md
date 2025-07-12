@@ -2,10 +2,10 @@
 
 
 ## Team Members:
-Ghadiya Priyanshu Pravinbhai 
-Patel Ansh 
-Rana Dhruv
-Maniar Mohammed Ayaz Mohammed Wasim
+Ghadiya Priyanshu Pravinbhai /n
+Patel Ansh /n
+Rana Dhruv /n
+Maniar Mohammed Ayaz Mohammed Wasim /n
 
 ## Problem Statement:
 
