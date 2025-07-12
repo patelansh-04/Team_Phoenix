@@ -1,47 +1,33 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const dotenv = require('dotenv');
-// Routes
-const authRoutes = require('./routes/authRoutes');
-const taskRoutes = require('./routes/taskRoutes');
-const userRoutes = require('./routes/userRoutes');
-const itemRoutes = require('./routes/itemRoutes');
-const swapRoutes = require('./routes/swapRoutes');
-const adminRoutes = require('./routes/adminRoutes');
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
+import connectDB from './config/db.js';
+import authRoutes from './routes/auth.routes.js';
+import itemRoutes from './routes/item.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import { errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
+connectDB();
+
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// CORS configuration with fallback for missing CLIENT_ORIGIN
-const corsOptions = {
-  origin: process.env.CLIENT_ORIGIN 
-    ? process.env.CLIENT_ORIGIN.split(',') 
-    : ['http://localhost:5173', 'http://localhost:8080'],
-  credentials: true
-};
-
-app.use(cors(corsOptions));
-app.set('trust proxy', 1);
-
-// Credentials: Allows cookies, Authorization headers, and TLS client certificates to be sent from the frontend
+// ---- global middleware ----
+app.use(cors({ origin: ['http://localhost:8080'], credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-// CookieParser: It parses the Cookie header in incoming HTTP requests and populates req.cookies with a JavaScript object of key–value pairs.
+app.use(morgan('dev'));
 
-// Authentication done in that routes file separately
+// ---- routes ----
 app.use('/api/auth', authRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/users', userRoutes); // Authorization
-
-// Items, Swaps, and Admin
 app.use('/api/items', itemRoutes);
-app.use('/api/swaps', swapRoutes);
 app.use('/api/admin', adminRoutes);
 
+// ---- error handler ----
+app.use(errorHandler);
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
-  .catch((err) => console.error(err));
+// ---- start server ----
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
