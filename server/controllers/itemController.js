@@ -62,6 +62,6 @@ const createItem = async (req, res) => {
 };
 
 module.exports = {
-  getTasks,
-  createTask
+  getAllItems,
+  createItem,
 };
