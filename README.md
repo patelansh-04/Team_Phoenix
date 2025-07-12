@@ -1,17 +1,26 @@
+
+## Team Members:
+Ghadiya Priyanshu Pravinbhai <br>
+Patel Ansh <br>
+Rana Dhruv <br>
+Maniar Mohammed Ayaz Mohammed Wasim <br>
+
+## Problem Statement:
+
+Rewear Community Clothing
+>>>>>>> 2a237c66631ecd31beabb69b2d176fb0ccb30638
+
+
+
+
+
 <<<<<<< HEAD
-# Welcome to your Lovable project
+# Welcome to your  project
 
-## Project info
-
-**URL**: https://lovable.dev/projects/9dd20840-5b46-4d39-9425-ef8f48f51f82
 
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/9dd20840-5b46-4d39-9425-ef8f48f51f82) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
@@ -61,10 +70,6 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/9dd20840-5b46-4d39-9425-ef8f48f51f82) and click on Share -> Publish.
-
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
@@ -76,13 +81,3 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 ## Hi!! There
 
 
-## Team Members:
-Ghadiya Priyanshu Pravinbhai <br>
-Patel Ansh <br>
-Rana Dhruv <br>
-Maniar Mohammed Ayaz Mohammed Wasim <br>
-
-## Problem Statement:
-
-Rewear Community Clothing
->>>>>>> 2a237c66631ecd31beabb69b2d176fb0ccb30638
