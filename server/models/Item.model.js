@@ -14,6 +14,9 @@ const ItemSchema = new Schema(
       required: true,
       enum: ['New', 'Like New', 'Good', 'Fair', 'Poor']
     },
+    points:    { type: Number, required: true },
+    
+    uploader:  { type: String, required: true },
     tags: [String],
     images: [{ type: String, required: true }],
     pointsValue: { type: Number, required: true },
