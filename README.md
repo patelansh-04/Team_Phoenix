@@ -77,10 +77,10 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 
 
 ## Team Members:
-Ghadiya Priyanshu Pravinbhai \n
-Patel Ansh \n
-Rana Dhruv \n
-Maniar Mohammed Ayaz Mohammed Wasim \n
+Ghadiya Priyanshu Pravinbhai <br>
+Patel Ansh <br>
+Rana Dhruv <br>
+Maniar Mohammed Ayaz Mohammed Wasim <br>
 
 ## Problem Statement:
 
