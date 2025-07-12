@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { apiService } from '@/lib/api';
 import ItemCard from '@/components/items/ItemCard';
 import { Button } from '@/components/ui/button';

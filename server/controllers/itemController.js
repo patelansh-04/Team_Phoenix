@@ -17,7 +17,7 @@ const getAllItems = async (req, res) => {
 
 const createItem = async (req, res) => {
   try {
-    const item = await Item.create({ ...req.body, owner: req.user.id });
+    const item = await Item.create({ ...req.body, owner: req.user._id });
     res.status(201).json(item);
   } catch (error) {
     console.error('Error creating item:', error);

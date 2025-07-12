@@ -1,85 +1,91 @@
-# ReWear Backend Server
+# ReWear Server
 
-## Setup Instructions
+Backend API server for the ReWear community clothing exchange platform.
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+## Environment Setup
 
-2. **Environment Configuration**
-   Create a `.env` file in the server directory with the following variables:
-   ```
-   MONGO_URI=mongodb://localhost:27017/rewear
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   PORT=5000
-   NODE_ENV=development
-   ```
+Create a `.env` file in the server directory with the following variables:
 
-3. **Database Setup**
-   - Make sure MongoDB is running locally
-   - The database will be created automatically when you first run the server
+```env
+# Database Configuration
+MONGO_URI=mongodb://localhost:27017/rewear
 
-4. **Seed the Database (Optional)**
-   ```bash
-   npm run seed
-   ```
-   This will create test users and items for development.
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 
-5. **Run the Server**
-   ```bash
-   npm run dev
-   ```
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# CORS Configuration (optional - will use defaults if not set)
+CLIENT_ORIGIN=http://localhost:5173,http://localhost:3000
+```
+
+## Installation
+
+```bash
+npm install
+```
+
+## Development
+
+```bash
+npm run dev
+```
+
+## Database Seeding
+
+```bash
+npm run seed
+```
 
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
-- `GET /api/auth/me` - Get current user (protected)
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/me` - Get current user
 
 ### Items
 - `GET /api/items` - Get all available items
-- `GET /api/items/:id` - Get item by ID
-- `POST /api/items` - Create new item (protected)
+- `GET /api/items/:id` - Get specific item
+- `POST /api/items` - Create new item (authenticated)
 
 ### Users
-- `GET /api/users` - Get user profile (protected)
-- `PUT /api/users` - Update user profile (protected)
+- `GET /api/users` - Get user profile (authenticated)
+- `PUT /api/users` - Update user profile (authenticated)
 
 ## Models
 
-### User Model
-- email (unique)
-- password (hashed)
-- name
-- role (user/admin)
-- points
-- profileImage
-- location
-- bio
-- rating
-- totalSwaps
+### User
+- `email` (String, required, unique)
+- `password` (String, required)
+- `name` (String, required)
+- `role` (String, enum: ['user', 'admin'], default: 'user')
+- `points` (Number, default: 0)
+- `profileImage` (String)
+- `location` (String)
+- `bio` (String)
+- `rating` (Number, default: 0)
+- `totalSwaps` (Number, default: 0)
 
-### Item Model
-- owner (ref to User)
-- title
-- description
-- category
-- type
-- size
-- condition
-- points
-- images
-- status
-- views
-- likes
-- approvedBy
-- approvedAt
-
-## Security Features
-- JWT authentication with HTTP-only cookies
-- Password hashing with bcrypt
-- CORS enabled for frontend communication
-- Role-based access control
+### Item
+- `owner` (ObjectId, ref: 'User', required)
+- `title` (String, required)
+- `description` (String, required)
+- `category` (String, required)
+- `type` (String, required)
+- `size` (String, required)
+- `condition` (String, enum: ['New', 'Like New', 'Good', 'Fair', 'Poor'], required)
+- `points` (Number, required)
+- `tags` ([String])
+- `images` ([String], required)
+- `status` (String, enum: ['PENDING_APPROVAL', 'AVAILABLE', 'PENDING_SWAP', 'SWAPPED', 'REMOVED'], default: 'PENDING_APPROVAL')
+- `views` (Number, default: 0)
+- `likes` ([ObjectId], ref: 'User')
+- `approvedBy` (ObjectId, ref: 'User')
+- `approvedAt` (Date)
+- `reasonForRemoval` (String)
+- `removedBy` (ObjectId, ref: 'User')
+- `removedAt` (Date)

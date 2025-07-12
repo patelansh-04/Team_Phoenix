@@ -15,10 +15,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-  origin: process.env.CLIENT_ORIGIN.split(','),
+// CORS configuration with fallback for missing CLIENT_ORIGIN
+const corsOptions = {
+  origin: process.env.CLIENT_ORIGIN 
+    ? process.env.CLIENT_ORIGIN.split(',') 
+    : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
-}));
+};
+
+app.use(cors(corsOptions));
 app.set('trust proxy', 1);
 
 // Credentials: Allows cookies, Authorization headers, and TLS client certificates to be sent from the frontend
