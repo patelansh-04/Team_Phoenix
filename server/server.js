@@ -15,11 +15,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+<<<<<<< HEAD
 // CORS configuration with fallback for missing CLIENT_ORIGIN
 const corsOptions = {
   origin: process.env.CLIENT_ORIGIN 
     ? process.env.CLIENT_ORIGIN.split(',') 
     : ['http://localhost:5173', 'http://localhost:3000'],
+=======
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || 'http://localhost:8080', // Default to Vite's default port
+>>>>>>> 474384150c3d59b32d9e4b6c3b7a526e7f302ced
   credentials: true,
 };
 

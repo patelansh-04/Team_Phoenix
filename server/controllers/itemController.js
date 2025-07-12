@@ -25,6 +25,7 @@ const createItem = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 const getItemById = async (req, res) => {
   try {
     const item = await Item.findById(req.params.id).populate('owner', 'name email');
@@ -42,4 +43,9 @@ module.exports = {
   getAllItems,
   createItem,
   getItemById
+=======
+module.exports = {
+  getAllItems,
+  createItem,
+>>>>>>> 474384150c3d59b32d9e4b6c3b7a526e7f302ced
 };
