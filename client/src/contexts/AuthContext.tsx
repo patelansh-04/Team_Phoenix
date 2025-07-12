@@ -1,18 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiService } from '@/lib/api';
 
 interface User {
   id: string;
   email: string;
   name: string;
   points: number;
-  isAdmin: boolean;
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
   loading: boolean;
 }
 
@@ -25,6 +26,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+<<<<<<< HEAD
+    checkAuthStatus();
+=======
     // Check for existing user session
     const checkAuth = async () => {
       try {
@@ -43,9 +47,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     checkAuth();
+>>>>>>> 474384150c3d59b32d9e4b6c3b7a526e7f302ced
   }, []);
 
+  const checkAuthStatus = async () => {
+    try {
+      const response = await apiService.getCurrentUser();
+      if (response.data) {
+        setUser(response.data);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const login = async (email: string, password: string) => {
+<<<<<<< HEAD
+    try {
+      const response = await apiService.login(email, password);
+      if (response.error) {
+        return { success: false, error: response.error };
+      }
+      
+      // Fetch user data after successful login
+      const userResponse = await apiService.getCurrentUser();
+      if (userResponse.data) {
+        setUser(userResponse.data);
+        return { success: true };
+      }
+      
+      return { success: false, error: 'Failed to get user data' };
+    } catch (error) {
+      return { success: false, error: 'Login failed' };
+    }
+  };
+
+  const signup = async (email: string, password: string, name: string) => {
+    try {
+      const response = await apiService.register(name, email, password);
+      if (response.error) {
+        return { success: false, error: response.error };
+      }
+      
+      // Auto-login after successful signup
+      return await login(email, password);
+    } catch (error) {
+      return { success: false, error: 'Signup failed' };
+    }
+=======
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -80,22 +131,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // After successful signup, log the user in
+<<<<<<< HEAD
     await login(email, password); // this also sends credentials
+=======
+    await login(email, password);
+>>>>>>> 474384150c3d59b32d9e4b6c3b7a526e7f302ced
+>>>>>>> 41f48947e6d351c865ba7e91403d690198c5e28c
   };
 
 
   const logout = async () => {
     try {
+<<<<<<< HEAD
+      await apiService.logout();
+=======
       await fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
+>>>>>>> 474384150c3d59b32d9e4b6c3b7a526e7f302ced
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
+<<<<<<< HEAD
+=======
       // Clear any local storage if needed
       localStorage.removeItem('reWearUser');
+>>>>>>> 474384150c3d59b32d9e4b6c3b7a526e7f302ced
     }
   };
 

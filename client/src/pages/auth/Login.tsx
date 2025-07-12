@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,12 @@ const Login = () => {
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
+  
+  // Get redirect path from location state
+  const from = (location.state as any)?.from || '/dashboard';
+  const message = (location.state as any)?.message;
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -24,12 +29,20 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      toast({
-        title: 'Welcome back!',
-        description: 'You have been successfully logged in.'
-      });
-      navigate('/dashboard');
+      const result = await login(formData.email, formData.password);
+      if (result.success) {
+        toast({
+          title: 'Welcome back!',
+          description: 'You have been successfully logged in.'
+        });
+        navigate(from);
+      } else {
+        toast({
+          title: 'Login failed',
+          description: result.error || 'Please check your credentials and try again.',
+          variant: 'destructive'
+        });
+      }
     } catch (error) {
       toast({
         title: 'Login failed',
@@ -49,6 +62,11 @@ const Login = () => {
           <CardDescription>
             Sign in to your ReWear account to continue swapping
           </CardDescription>
+          {message && (
+            <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">{message}</p>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,12 @@ const Signup = () => {
   const { signup } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
+  
+  // Get redirect path from location state
+  const from = (location.state as any)?.from || '/dashboard';
+  const message = (location.state as any)?.message;
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,12 +41,20 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      await signup(formData.email, formData.password, formData.name);
-      toast({
-        title: 'Welcome to ReWear!',
-        description: 'Your account has been created successfully. You received 50 welcome points!'
-      });
-      navigate('/dashboard');
+      const result = await signup(formData.email, formData.password, formData.name);
+      if (result.success) {
+        toast({
+          title: 'Welcome to ReWear!',
+          description: 'Your account has been created successfully. You received 50 welcome points!'
+        });
+        navigate(from);
+      } else {
+        toast({
+          title: 'Signup failed',
+          description: result.error || 'There was an error creating your account. Please try again.',
+          variant: 'destructive'
+        });
+      }
     } catch (error) {
       toast({
         title: 'Signup failed',
@@ -61,6 +74,11 @@ const Signup = () => {
           <CardDescription>
             Create your account and start your sustainable fashion journey
           </CardDescription>
+          {message && (
+            <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">{message}</p>
+            </div>
+          )}
           <div className="flex items-center justify-center gap-2 mt-4 p-3 bg-green-50 rounded-lg">
             <Gift className="w-5 h-5 text-green-600" />
             <span className="text-sm font-medium text-green-700">

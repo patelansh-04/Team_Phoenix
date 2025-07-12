@@ -111,10 +111,24 @@ const me = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
+// GET
+const checkLoggedin = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error('Check logged in error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+=======
 // POST /api/auth/logout
 const logout = async (req, res) => {
   res.clearCookie('token');
   return res.status(200).json({ message: 'Logged out successfully' });
+>>>>>>> 474384150c3d59b32d9e4b6c3b7a526e7f302ced
 };
 
 module.exports = {

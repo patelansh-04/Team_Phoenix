@@ -7,14 +7,17 @@ import { Heart, User } from 'lucide-react';
 
 interface ItemCardProps {
   item: {
-    id: string;
+    _id: string;
     title: string;
     category: string;
     size: string;
     condition: string;
     points: number;
-    image: string;
-    uploader: string;
+    images: string[];
+    owner: {
+      name: string;
+      email: string;
+    };
   };
 }
 
@@ -24,7 +27,7 @@ const ItemCard = ({ item }: ItemCardProps) => {
       <CardHeader className="p-0">
         <div className="relative overflow-hidden">
           <img 
-            src={item.image} 
+            src={item.images[0] || '/placeholder.svg'} 
             alt={item.title}
             className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -54,10 +57,10 @@ const ItemCard = ({ item }: ItemCardProps) => {
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <User className="w-3 h-3" />
-              {item.uploader}
+              {item.owner.name}
             </div>
             <Button asChild size="sm">
-              <Link to={`/item/${item.id}`}>
+              <Link to={`/item/${item._id}`}>
                 View Details
               </Link>
             </Button>

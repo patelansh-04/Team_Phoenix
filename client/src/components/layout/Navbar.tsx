@@ -39,6 +39,9 @@ const Navbar = () => {
                 <span className="hidden sm:inline text-sm text-muted-foreground">
                   {user.points} points
                 </span>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/items">Browse Items</Link>
+                </Button>
                 <Button asChild variant="outline" size="sm">
                   <Link to="/add-item">
                     <Plus className="w-4 h-4 mr-1" />
@@ -59,7 +62,7 @@ const Navbar = () => {
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
-                    {user.isAdmin && (
+                    {user.role === 'admin' && (
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="flex items-center">
                           <Settings className="w-4 h-4 mr-2" />
