@@ -51,7 +51,7 @@ const Dashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
+        <h1 className="text-3xl font-bold mb-2">Welcome back, {user.name}!</h1>
         <p className="text-muted-foreground">Manage your items and track your swapping activity</p>
       </div>
 

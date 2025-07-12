@@ -70,12 +70,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('reWearUser');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setLoading(false);
+    }
+
     const checkAuth = async () => {
       try {
-        const response = await authFetch(`${API_URL}/auth/me`);
+        const response = await authFetch(`http://localhost:5000/auth/me`);
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
+          localStorage.setItem('reWearUser', JSON.stringify(userData));
+        } else {
+          localStorage.removeItem('reWearUser');
         }
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -89,13 +98,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`http://localhost:5000/api/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password })
       });
 
       if (!response.ok) {
@@ -142,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async (): Promise<void> => {
     try {
-      await authFetch(`${API_URL}/auth/logout`, {
+      await authFetch(`http://localhost:5000/auth/logout`, {
         method: 'POST',
       });
     } catch (error) {
