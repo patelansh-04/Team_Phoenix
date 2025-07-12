@@ -24,7 +24,7 @@
 # ✅ Items API (Auth Required)
 | Method | Route                   | Description     | Output    |
 | ------ | ----------------------- | --------------- | --------- |
-| GET    | `/api/items`            | Get All Items   | res.items |
+| GET    | `/api/items`            | Get All Items   | res.featuredItems |
 | POST   | `/api/tasks/createTask` | Create new task |           |
 
 
