@@ -30,6 +30,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     generateToken(res, user._id);
     res.json({ success: true, user });
   } else {
+    
     throw new Error('Invalid credentials');
   }
 });
