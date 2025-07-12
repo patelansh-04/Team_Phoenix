@@ -1,20 +1,27 @@
-const connectToMongo = require('./db.js');
-const express = require('express')
-const app = express()
-const port = 5000
-const cors=require('cors')
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const dotenv = require('dotenv');
+const authRoutes = require('./routes/authRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const userRoutes = require('./routes/userRoutes'); // Added missing require
 
-connectToMongo();
+dotenv.config();
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-app.use(express.json())
-app.use(cors({origin:'*'})) // Allow all origins, you can specify a specific origin if needed;
+app.use(cors({ origin: true, credentials: true }));
+// Credentials: Allows cookies, Authorization headers, and TLS client certificates to be sent from the frontend
+app.use(express.json());
+app.use(cookieParser());
+// CookieParser: It parses the Cookie header in incoming HTTP requests and populates req.cookies with a JavaScript object of key–value pairs.
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+// Authentication done in that routes file separately
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/users', userRoutes); // Authorization Example
 
-app.use('/auth',require('./routes/auth'))
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
+  .catch((err) => console.error(err));
