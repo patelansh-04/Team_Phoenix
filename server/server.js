@@ -8,12 +8,19 @@ const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const userRoutes = require('./routes/userRoutes');
 const itemRoutes = require('./routes/itemRoutes');
+const swapRoutes = require('./routes/swapRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN.split(','),
+  credentials: true,
+}));
+app.set('trust proxy', 1);
+
 // Credentials: Allows cookies, Authorization headers, and TLS client certificates to be sent from the frontend
 app.use(express.json());
 app.use(cookieParser());
@@ -24,8 +31,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/users', userRoutes); // Authorization
 
-// Items
-app.use('/api/items', itemRoutes)
+// Items, Swaps, and Admin
+app.use('/api/items', itemRoutes);
+app.use('/api/swaps', swapRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
