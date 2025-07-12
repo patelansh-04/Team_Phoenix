@@ -17,7 +17,7 @@ const generateToken = (res, userId) => {
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
   if (await User.findOne({ email })) throw new Error('Email already registered');
-  const user = await User.create({ name, email, password, points: 50 });
+  const user = await User.create({ name, email, password });
   generateToken(res, user._id);
   res.status(201).json({ success: true, user });
 });
