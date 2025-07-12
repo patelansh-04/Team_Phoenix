@@ -70,6 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // 🔥 This allows the cookie to be set by the backend
       body: JSON.stringify({ email, password, name }),
     });
 
@@ -79,8 +80,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // After successful signup, log the user in
-    await login(email, password);
+    await login(email, password); // this also sends credentials
   };
+
 
   const logout = async () => {
     try {

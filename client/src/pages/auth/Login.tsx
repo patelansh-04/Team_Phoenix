@@ -93,7 +93,7 @@ const Login = () => {
             <p className="text-sm text-blue-800 font-medium">Demo Accounts:</p>
             <p className="text-xs text-blue-600 mt-1">
               Regular user: any email + any password<br />
-              Admin: admin@rewear.com + any password
+              + Admin: login with admin@rewear.com (role-based access)
             </p>
           </div>
         </CardContent>

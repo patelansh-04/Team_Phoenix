@@ -16,8 +16,8 @@ const register = async (req, res) => {
       name, 
       email, 
       password: hashed,
-      points: 100, // Starting points for new users
-      isAdmin: false
+      points: 50, // Starting points for new users
+      role: 'user'
     });
 
     // Create token for automatic login after registration
@@ -39,7 +39,7 @@ const register = async (req, res) => {
       name: user.name,
       email: user.email,
       points: user.points,
-      isAdmin: user.isAdmin
+      role: user.role
     });
   } catch (error) {
     console.error('Registration Error:', error);
