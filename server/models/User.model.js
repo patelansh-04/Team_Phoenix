@@ -22,6 +22,12 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    refreshTokens: [
+      {
+        token: String,
+        expiresAt: Date,
+      },
+    ],
     profileImage: String,
     location: String,
     bio: String,
@@ -51,6 +57,29 @@ UserSchema.pre('save', async function (next) {
 // Method to compare password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to add refresh token
+UserSchema.methods.addRefreshToken = function (refreshToken) {
+  this.refreshTokens.push({
+    token: refreshToken,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+  });
+
+  // Remove expired tokens
+  this.refreshTokens = this.refreshTokens.filter(
+    (token) => token.expiresAt > new Date()
+  );
+
+  return this.save();
+};
+
+// Method to revoke refresh token
+UserSchema.methods.revokeRefreshToken = function (refreshToken) {
+  this.refreshTokens = this.refreshTokens.filter(
+    (token) => token.token !== refreshToken
+  );
+  return this.save();
 };
 
 module.exports = mongoose.model('User', UserSchema);

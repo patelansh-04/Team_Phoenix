@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Gift } from 'lucide-react';
+import { Loader2, Gift, Check, X } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 const Signup = () => {
   const { signup } = useAuth();
@@ -26,9 +26,60 @@ const Signup = () => {
     confirmPassword: ''
   });
 
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [validations, setValidations] = useState({
+    hasLength: false,
+    hasNumber: false,
+    hasUpper: false,
+    hasSpecial: false
+  });
+
+  const validatePassword = (password: string) => {
+    const checks = {
+      hasLength: password.length >= 8,
+      hasNumber: /\d/.test(password),
+      hasUpper: /[A-Z]/.test(password),
+      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    setValidations(checks);
+    
+    // Calculate strength (25% for each criteria met)
+    const strength = Object.values(checks).filter(Boolean).length * 25;
+    setPasswordStrength(strength);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setFormData({ ...formData, password: newPassword });
+    validatePassword(newPassword);
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!validateEmail(formData.email)) {
+      toast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (passwordStrength < 75) {
+      toast({
+        title: 'Weak Password',
+        description: 'Please choose a stronger password that meets all requirements.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: 'Passwords do not match',
@@ -117,9 +168,28 @@ const Signup = () => {
                 type="password"
                 placeholder="Create a password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={handlePasswordChange}
                 required
               />
+              <Progress value={passwordStrength} className="h-2" />
+              <div className="mt-2 space-y-1">
+                <div className="flex items-center gap-2 text-sm">
+                  {validations.hasLength ? <Check className="w-4 h-4 text-green-500" /> : <X className="w-4 h-4 text-red-500" />}
+                  <span>At least 8 characters</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  {validations.hasUpper ? <Check className="w-4 h-4 text-green-500" /> : <X className="w-4 h-4 text-red-500" />}
+                  <span>One uppercase letter</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  {validations.hasNumber ? <Check className="w-4 h-4 text-green-500" /> : <X className="w-4 h-4 text-red-500" />}
+                  <span>One number</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  {validations.hasSpecial ? <Check className="w-4 h-4 text-green-500" /> : <X className="w-4 h-4 text-red-500" />}
+                  <span>One special character</span>
+                </div>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>

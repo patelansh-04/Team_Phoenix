@@ -2,13 +2,47 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/User.model');
 
+const generateTokens = (user) => {
+  const accessToken = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+
+  const refreshToken = jwt.sign(
+    { id: user._id },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return { accessToken, refreshToken };
+};
+
+const setTokenCookies = (res, { accessToken, refreshToken }) => {
+  res.cookie('token', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000 // 15 minutes
+  });
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/api/auth/refresh',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+};
+
 // POST /api/auth/register
 const register = async (req, res) => {
   const { name, email, password } = req.body;
+  
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ error: 'Email already in use' });
+      return res.status(409).json({ message: 'Email already in use' });
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -16,23 +50,13 @@ const register = async (req, res) => {
       name, 
       email, 
       password: hashed,
-      points: 50, // Starting points for new users
+      points: 50,
       role: 'user'
     });
 
-    // Create token for automatic login after registration
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
-    });
+    const tokens = generateTokens(user);
+    await user.addRefreshToken(tokens.refreshToken);
+    setTokenCookies(res, tokens);
 
     return res.status(201).json({ 
       id: user._id,
@@ -43,44 +67,104 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Registration Error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 // POST /api/auth/login
 const login = async (req, res) => {
   const { email, password } = req.body;
+  
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
 
     const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!isValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
-    });
+    const tokens = generateTokens(user);
+    await user.addRefreshToken(tokens.refreshToken);
+    setTokenCookies(res, tokens);
 
     return res.status(200).json({
       id: user._id,
       name: user.name,
       email: user.email,
       points: user.points,
-      isAdmin: user.isAdmin
+      isAdmin: user.role === 'admin'
     });
   } catch (error) {
     console.error('Login Error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
+};
+
+// POST /api/auth/refresh
+const refresh = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Refresh token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify if the refresh token is still valid in the database
+    const validToken = user.refreshTokens.find(t => t.token === refreshToken);
+    if (!validToken) {
+      return res.status(401).json({ message: 'Invalid refresh token' });
+    }
+
+    // Generate new tokens
+    const tokens = generateTokens(user);
+    
+    // Replace old refresh token with new one
+    await user.revokeRefreshToken(refreshToken);
+    await user.addRefreshToken(tokens.refreshToken);
+    
+    setTokenCookies(res, tokens);
+
+    return res.status(200).json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      points: user.points,
+      isAdmin: user.role === 'admin'
+    });
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid refresh token' });
+  }
+};
+
+// POST /api/auth/logout
+const logout = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  
+  if (refreshToken) {
+    try {
+      const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+      const user = await User.findById(decoded.id);
+      if (user) {
+        await user.revokeRefreshToken(refreshToken);
+      }
+    } catch (error) {
+      // Ignore token verification errors during logout
+    }
+  }
+
+  res.cookie('token', '', { maxAge: 0 });
+  res.cookie('refreshToken', '', { maxAge: 0, path: '/api/auth/refresh' });
+  res.status(200).json({ message: 'Logged out successfully' });
 };
 
 // GET /api/auth/me
@@ -88,52 +172,35 @@ const me = async (req, res) => {
   try {
     const token = req.cookies.token;
     if (!token) {
-      return res.status(401).json({ error: 'Not authenticated' });
+      return res.status(401).json({ message: 'Not authenticated' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id);
     
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    return res.json({
+    return res.status(200).json({
       id: user._id,
       name: user.name,
       email: user.email,
       points: user.points,
-      isAdmin: user.isAdmin
+      isAdmin: user.role === 'admin'
     });
   } catch (error) {
-    console.error('Auth Check Error:', error);
-    return res.status(401).json({ error: 'Invalid token' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expired' });
+    }
+    return res.status(401).json({ message: 'Invalid token' });
   }
-};
-
-<<<<<<< HEAD
-// GET
-const checkLoggedin = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select('-password');
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    return res.status(200).json(user);
-  } catch (error) {
-    console.error('Check logged in error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-=======
-// POST /api/auth/logout
-const logout = async (req, res) => {
-  res.clearCookie('token');
-  return res.status(200).json({ message: 'Logged out successfully' });
->>>>>>> 474384150c3d59b32d9e4b6c3b7a526e7f302ced
 };
 
 module.exports = {
   register,
   login,
-  me,
-  logout
+  refresh,
+  logout,
+  me
 };
