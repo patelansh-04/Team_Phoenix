@@ -1,43 +1,31 @@
 const Task = require('../models/Task.model');
 
+const Task = require('../models/Task'); // Assuming you have a Task model
+
 const getAllTasks = async (req, res) => {
-  const featuredItems = [
-    {
-      id: '1',
-      title: 'Vintage Denim Jacket',
-      category: 'Outerwear',
-      size: 'M',
-      condition: 'Good',
-      points: 25,
-      image: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5d?auto=format&fit=crop&w=300&h=300',
-      uploader: 'Sarah M.'
-    },
-    {
-      id: '2',
-      title: 'Summer Floral Dress',
-      category: 'Dresses',
-      size: 'S',
-      condition: 'Excellent',
-      points: 30,
-      image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=300&h=300',
-      uploader: 'Emma K.'
-    },
-    {
-      id: '3',
-      title: 'Designer Sneakers',
-      category: 'Shoes',
-      size: '9',
-      condition: 'Good',
-      points: 40,
-      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=300&h=300',
-      uploader: 'Mike D.'
+    try {
+        const tasks = await Task.find(); // Get all tasks from DB
+        res.status(200).json({
+            success: true,
+            count: tasks.length,
+            data: tasks
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Server Error',
+            error: error.message
+        });
     }
-  ];
-  return res.status(200).json({
-    message: 'Featured items fetched successfully',
-    featuredItems
-  });
 };
+
+module.exports = {
+    getAllTasks,
+    getTasks,
+    createTask
+};
+
+
 
 const getTasks = async (req, res) => {
   try {
@@ -63,6 +51,7 @@ const createTask = async (req, res) => {
 };
 
 module.exports = {
+  getAllTasks,
   getTasks,
   createTask
 };
