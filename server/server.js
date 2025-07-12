@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
+// Routes
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
-const userRoutes = require('./routes/userRoutes'); // Added missing require
+const userRoutes = require('./routes/userRoutes');
+const itemRoutes = require('./routes/itemRoutes');
 
 dotenv.config();
 const app = express();
@@ -20,7 +22,11 @@ app.use(cookieParser());
 // Authentication done in that routes file separately
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
-app.use('/api/users', userRoutes); // Authorization Example
+app.use('/api/users', userRoutes); // Authorization
+
+// Items
+app.use('/api/items', itemRoutes)
+
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
